@@ -25,7 +25,6 @@ public class ExampleClass {
 
         hologram.build();
         hologram.show(target);
-
     }
 
 }

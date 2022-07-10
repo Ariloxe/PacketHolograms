@@ -10,6 +10,10 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class HologramsManager {
 
+    /**
+     * The methods who init the whole holograms system and permit the developer to use it.
+     * @param javaPlugin your bukkit instance.
+     */
     public static void init(JavaPlugin javaPlugin){
         javaPlugin.getServer().getPluginManager().registerEvents(new PacketInjector(), javaPlugin);
         PacketHologramManager.getInstance().init(javaPlugin);

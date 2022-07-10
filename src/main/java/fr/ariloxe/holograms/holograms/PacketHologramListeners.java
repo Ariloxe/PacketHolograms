@@ -26,8 +26,6 @@ public class PacketHologramListeners implements Listener, PacketListener {
 
     private final Class<?> packetPlayInUseEntityClazz = Reflection.getMinecraftClass("PacketPlayInUseEntity");
     private final Reflection.FieldAccessor<Integer> entityIdField = Reflection.getField(this.packetPlayInUseEntityClazz, "a", int.class);
-
-    //TODO retirer quand on aura compris ce truc de double packet de mort
     private final Map<UUID, Long> uuidLongMap = new HashMap<>();
 
     public PacketHologramListeners(){

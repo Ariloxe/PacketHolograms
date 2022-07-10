@@ -1,6 +1,5 @@
 package fr.ariloxe.holograms.holograms;
 
-import fr.ariloxe.holograms.PacketUtils;
 import net.minecraft.server.v1_8_R3.*;
 import org.apache.commons.lang.BooleanUtils;
 import org.bukkit.Bukkit;
@@ -27,7 +26,7 @@ public class PacketHologram {
     private final Map<Integer, TriConsumer<Player, PacketHologram, Integer>> integerTriConsumerMap = new HashMap<>();
 
     /**
-     * Create the hologram
+     * Init the hologram
      * @param strings the differents text on the Hologram
      * @param location the location where the Hologram appears
      */
@@ -37,6 +36,11 @@ public class PacketHologram {
         this.name = "hologram_" + new Random().nextInt(9999);
     }
 
+
+    /**
+     * Build the hologram
+     * @return the hologram
+     */
     public PacketHologram build(){
         for (String text : this.hologramText) {
             this.count++;
@@ -80,14 +84,27 @@ public class PacketHologram {
         return this;
     }
 
+    /**
+     * Permit to set a hologram state to global (every player automatically load it and see it on join)
+     * @param bool if the hologram is global or no. (true = global)
+     * @return the current hologram
+     */
     public PacketHologram setGlobal(boolean bool){
         this.global = bool;
 
         return this;
     }
 
+    /**
+     * Permit to get a hologram state to global (every player automatically load it and see it on join)
+     * @return the state
+     */
     public boolean isGlobal(){ return this.global; }
 
+    /**
+     * Permit to show this hologram to a specific player
+     * @param player the player who'll see it
+     */
     public void show(Player player){
         for (EntityArmorStand entityArmorStand : this.armorStandMap.values()) {
             PacketPlayOutSpawnEntityLiving packet = new PacketPlayOutSpawnEntityLiving(entityArmorStand);
@@ -100,6 +117,10 @@ public class PacketHologram {
         }
     }
 
+    /**
+     * Permit to hide this hologram to a specific player
+     * @param player the player who'll hide it
+     */
     public void hide(Player player) {
         for (EntityArmorStand entityArmorStand : this.armorStandMap.values()) {
             PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(entityArmorStand.getId());
@@ -112,6 +133,11 @@ public class PacketHologram {
         }
     }
 
+    /**
+     * Permit to update a specific line, just for one player
+     * @param line the line's number you want to update.
+     * @param player the player who'll change it.
+     */
     public void updateLine(int line, Player player){
         EntityArmorStand entityArmorStand = armorStandMap.get(line);
 
@@ -119,18 +145,29 @@ public class PacketHologram {
         ((CraftPlayer) player).getHandle().playerConnection.sendPacket(metadata);
     }
 
+    /**
+     * Permit to update a specific line for every players
+     * @param line the line's number you want to update.
+     */
     public void updateLine(int line){
         EntityArmorStand entityArmorStand = armorStandMap.get(line);
-        //  Location location = entityArmorStand.getBukkitEntity().getLocation();
 
         PacketPlayOutEntityMetadata metadata = new PacketPlayOutEntityMetadata(entityArmorStand.getId(), entityArmorStand.getDataWatcher(), true);
-        PacketUtils.broadcastPacket(metadata);
+        Bukkit.getOnlinePlayers().forEach(player -> ((CraftPlayer) player).getHandle().playerConnection.sendPacket(metadata));
     }
 
+    /**
+     * Permit to rebuild the entiere hologram (destroy entities and spawn newers), just for one player
+     * @param player the player to send the modifications
+     */
     public void updateHologram(Player player) {
         hide(player);
         show(player);
     }
+
+    /**
+     * Permit to rebuild the entiere hologram (destroy entities and spawn newers), for every players
+     */
     public void updateHologram() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             hide(player);
@@ -138,6 +175,10 @@ public class PacketHologram {
         }
     }
 
+    /**
+     * Permit to get the name you specified on the armorstand init process.
+     * @return the hologram's name
+     */
     public String getName() {
         return name;
     }
@@ -145,6 +186,8 @@ public class PacketHologram {
 
     /**
      * Get the callback of this hologram, if null there isn't callback
+     * @param line the line you want to get the callback.
+     * @return the {@link TriConsumer} for a specific line
      */
     public TriConsumer<Player, PacketHologram, Integer> getCallback(int line) {
         return this.integerTriConsumerMap.get(line);
@@ -152,6 +195,7 @@ public class PacketHologram {
 
     /**
      * Add callback to hologram
+     * @param line the line you want to add a callback
      * @param playerConsumer consumer
      *                       player = the player who rightclick on it
      *                       hologram = the hologram who is clicked (this)
@@ -164,6 +208,7 @@ public class PacketHologram {
     /**
      * Get the ArmorStand of a specific line
      * @param numberLine the line that you want to get the armorstand
+     * @return the entity armorstand (nms) of this line.
      */
     public EntityArmorStand getArmorStand(int numberLine){
         return this.armorStandMap.get(numberLine);
@@ -181,12 +226,13 @@ public class PacketHologram {
     /**
      * Get a line's value
      * @param numberLine the line that you want to recuip it.
+     * @return the text on this specific line.
      */
     public String getLine(int numberLine){
         return this.armorStandMap.get(numberLine).getCustomName();
     }
 
-    private void setIA(EntitySlime bukkitEntity, Boolean bool) {
+    private void setIA(EntitySlime bukkitEntity, boolean bool) {
         Entity nmsEntity = (bukkitEntity.getBukkitEntity()).getHandle();
         NBTTagCompound tag = nmsEntity.getNBTTag();
         if (tag == null)
